@@ -2,14 +2,15 @@
   "_read_on": "2026-10-20",
   "_rule": "Every number below was read from the vendor's own page on the date above, and its URL is in that block's sources. Change an input and the arithmetic follows your input. Do not edit a number without editing its source.",
   "perplexity_computer": {
-    "plan": "Perplexity Pro, the plan Computer needs",
-    "monthly_price_usd": 20.0,
+    "plan": "Perplexity Max, the plan whose monthly credits the table prices; Pro includes weekly Computer usage and a one-time credit grant instead of a monthly allocation",
+    "monthly_price_usd": 200.0,
     "annual_price_usd": 167.0,
+    "annual_note": "Max is $167 a month billed annually; the table prices the monthly rate.",
     "credits_in_month": 10000,
     "credits_per_usd": 100,
     "credits_per_task_default": 100,
     "sources": {
-      "plans_and_credits": "https://www.perplexity.ai/pricing",
+      "plans_and_credits": "https://www.perplexity.ai/hub/pricing",
       "credits_per_dollar": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity"
     }
   },
