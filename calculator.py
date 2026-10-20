@@ -57,6 +57,7 @@ def kortix_computer(seconds_running: float, credit_seconds: float,
     computer_overage = max(0.0, computer_usd - covered)
     total = monthly_price + computer_overage + model_usd
     return {
+        "included_usd": round(covered, 2),
         "computer_hours": round(seconds_running / 3600, 1),
         "computer_usd": round(computer_usd, 2),
         "computer_overage_usd": round(computer_overage, 2),
@@ -94,13 +95,12 @@ def main() -> None:
           f"{hours} agent-computer hours on Kortix, "
           f"{'own model keys' if args.own_keys else 'vendor model calls'}")
     print()
-    print(f"{'':22}{'Perplexity Computer':>22}{'Kortix':>14}")
-    print(f"{'monthly fixed':22}{pc_row['total_usd'] - pc_row['overage_usd']:>22.2f}"
-          f"{kx_row['total_usd'] - kx_row['computer_overage_usd'] - kx_row['model_usd']:>14.2f}")
-    print(f"{'metered work':22}{pc_row['metered_usd']:>22.2f}{kx_row['computer_usd']:>14.2f}")
-    print(f"{'overage':22}{pc_row['overage_usd']:>22.2f}{kx_row['computer_overage_usd']:>14.2f}")
-    print(f"{'model calls':22}{0.0:>22.2f}{kx_row['model_usd']:>14.2f}")
-    print(f"{'total':22}{pc_row['total_usd']:>22.2f}{kx_row['total_usd']:>14.2f}")
+    print(f"{'':24}{'Perplexity Computer':>22}{'Kortix':>14}")
+    print(f"{'plan':24}{pc['monthly_price_usd']:>22.2f}{kx['monthly_price_usd']:>14.2f}")
+    print(f"{'+ metered work':24}{pc_row['metered_usd']:>22.2f}{kx_row['computer_usd']:>14.2f}")
+    print(f"{'- included allowance':24}{-pc_row['included_usd']:>22.2f}{-kx_row['included_usd']:>14.2f}")
+    print(f"{'+ model calls':24}{0.0:>22.2f}{kx_row['model_usd']:>14.2f}")
+    print(f"{'= total':24}{pc_row['total_usd']:>22.2f}{kx_row['total_usd']:>14.2f}")
     if pc_row["per_task_usd"] and kx_row["computer_hours"]:
         kx_per_hour = (kx_row["computer_usd"] / kx_row["computer_hours"]) if kx_row["computer_hours"] else 0
         print()
