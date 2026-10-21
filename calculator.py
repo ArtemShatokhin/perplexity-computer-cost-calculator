@@ -77,6 +77,12 @@ def main() -> None:
                     help="agent-computer hours a month on Kortix; default from prices.json")
     ap.add_argument("--own-keys", action="store_true",
                     help="model calls billed by your own provider (Kortix only)")
+    ap.add_argument("--credits-in-month", type=float, default=None,
+                    help="Kortix credits the plan includes; default from prices.json "
+                         "(the free tier). Use 5000 for the paid pack")
+    ap.add_argument("--plan-price", type=float, default=None,
+                    help="Kortix plan price in dollars; default from prices.json. "
+                         "Use 50 with --credits-in-month 5000 for the paid pack")
     args = ap.parse_args()
 
     pc = p["perplexity_computer"]
@@ -87,18 +93,25 @@ def main() -> None:
     pc_row = per_task(pc["monthly_price_usd"], pc["credits_in_month"],
                       pc["credits_per_usd"], credits_per_task, args.tasks)
     model_usd = 0.0 if args.own_keys else kx["model_usd_default"]
+    kx_plan_price = args.plan_price if args.plan_price is not None else kx["monthly_price_usd"]
+    kx_credits = args.credits_in_month if args.credits_in_month is not None else kx["credits_in_month"]
     kx_row = kortix_computer(hours * 3600, kx["credits_per_second"],
-                             kx["credits_per_usd"], kx["monthly_price_usd"],
-                             kx["credits_in_month"], model_usd)
+                             kx["credits_per_usd"], kx_plan_price,
+                             kx_credits, model_usd)
 
     print(f"inputs: {args.tasks} tasks/month, {credits_per_task} credits/task, "
           f"{hours} agent-computer hours on Kortix, "
-          f"{'own model keys' if args.own_keys else 'vendor model calls'}")
+          f"{'own model keys' if args.own_keys else 'vendor model calls'}, "
+          f"Kortix plan {kx_plan_price:.2f} with {kx_credits:.0f} credits")
     print()
     print(f"{'':24}{'Perplexity Computer':>22}{'Kortix':>14}")
-    print(f"{'plan':24}{pc['monthly_price_usd']:>22.2f}{kx['monthly_price_usd']:>14.2f}")
+    print(f"{'plan':24}{pc['monthly_price_usd']:>22.2f}{kx_plan_price:>14.2f}")
     print(f"{'+ metered work':24}{pc_row['metered_usd']:>22.2f}{kx_row['computer_usd']:>14.2f}")
-    print(f"{'- included allowance':24}{-pc_row['included_usd']:>22.2f}{-kx_row['included_usd']:>14.2f}")
+    # The allowance line never deducts more than the work that was metered:
+    # a 5,000-credit pack against $6.48 of work deducts $6.48, not $50.
+    pc_allowance = min(pc_row["included_usd"], pc_row["metered_usd"])
+    kx_allowance = min(kx_row["included_usd"], kx_row["computer_usd"])
+    print(f"{'- included allowance':24}{-pc_allowance:>22.2f}{-kx_allowance:>14.2f}")
     print(f"{'+ model calls':24}{0.0:>22.2f}{kx_row['model_usd']:>14.2f}")
     print(f"{'= total':24}{pc_row['total_usd']:>22.2f}{kx_row['total_usd']:>14.2f}")
     if pc_row["per_task_usd"] and kx_row["computer_hours"]:

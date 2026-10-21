@@ -11,6 +11,7 @@ python3 calculator.py                          # 300 tasks a month, 60 agent-com
 python3 calculator.py --tasks 600              # a heavier month
 python3 calculator.py --credits-per-task 250   # a task that draws more than the default
 python3 calculator.py --hours 200 --own-keys   # Kortix, with model calls on your own keys
+python3 calculator.py --credits-in-month 5000 --plan-price 50 --own-keys  # Kortix on the $50 Credits plan
 ```
 
 Python 3.9+, standard library only, no network calls. Every default lives in [`data/prices.json`](data/prices.json) next to the vendor page it was read from and the date it was read.
@@ -35,7 +36,25 @@ Kortix: $0.108 per agent-computer hour (model calls on your own keys)
 
 The Perplexity column is `plan price + (tasks x credits per task) / 100 - (credits in the plan) / 100`, and every line adds up to the total below it. The Kortix column is `plan price + (seconds the computer runs x 0.003 credits a second) / 100 + your model spend`, and a stopped computer adds nothing. That last clause is where a light month gets cheap: an agent that runs twenty hours a month is not a bill with a task count in it.
 
-The Kortix side of the default run is the free tier: 500 credits a month and one project. Change `credits_in_month` to a paid pack (5,000 credits from $50) and the overage line moves the way the plan does.
+The Kortix side of the default run is the free tier: 500 credits a month and one project, which covers $5 of computer time, or about 45 of the 60 hours. Past that the account runs on the Credits plan, which is 5,000 credits from $50 a month. Those two flags print that month:
+
+```
+python3 calculator.py --credits-in-month 5000 --plan-price 50 --own-keys
+
+inputs: 300 tasks/month, 100 credits/task, 60 agent-computer hours on Kortix, own model keys, Kortix plan 50.00 with 5000 credits
+
+                           Perplexity Computer        Kortix
+plan                                    200.00         50.00
++ metered work                          300.00          6.48
+- included allowance                   -100.00         -6.48
++ model calls                             0.00          0.00
+= total                                 400.00         50.00
+
+Perplexity Computer: $1.333 per task
+Kortix: $0.108 per agent-computer hour (model calls on your own keys)
+```
+
+The allowance line never deducts more than the work that was metered: 5,000 credits against $6.48 of computer time deducts $6.48, and the month is the $50 plan floor. That is the bill a 300-task month actually produces on Kortix; $1.48 is a free tier the month has already outgrown.
 
 ## What this calculator does not do
 
